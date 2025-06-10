@@ -43,3 +43,23 @@ variable "repo_name_patient" {
 variable "repo_name_appointment" {
   default = "appointment_micro_service"
 }
+
+variable "ecs_task_role" {
+  default = "ecs_task_role_patient_appointment_service"
+}
+
+variable "cpu" {
+  default     = 256
+}
+
+variable "memory" {
+  default     = 512
+}
+
+variable "app_port" {
+  default     = 3000
+}
+
+variable "desired_capacity" {
+  default     = 1
+}
