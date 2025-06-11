@@ -1,6 +1,9 @@
 name: UC8 using ECS Farget for patient & appointment service
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       action:
