@@ -83,6 +83,12 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
+
       - name: Setup Node.js
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: actions/setup-node@v3
@@ -148,8 +154,7 @@ jobs:
               body: output
             })
 
-      - name: Terraform Plan
-        run: terraform plan
+      
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
