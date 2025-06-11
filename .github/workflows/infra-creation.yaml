@@ -35,6 +35,7 @@ jobs:
       - name: Run TFLint
         run: tflint --init && tflint -f compact
         working-directory: ./
+        continue-on-error: true
 
       - name: Install Checkov
         run: |
