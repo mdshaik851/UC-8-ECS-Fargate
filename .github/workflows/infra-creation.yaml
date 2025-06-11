@@ -75,13 +75,16 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
+        id: init
         run: terraform init
 
-      - name: Terraform Format
+      - name: Format Terraform code
         run: terraform fmt -recursive
+        id: fmt
 
       - name: Terraform Validate
-        run: terraform validate
+        id: validate
+        run: terraform validate -no-color
 
       - name: Terraform Plan
         id: plan
