@@ -19,3 +19,7 @@ variable "ecs_security_group_id" {}
 variable "private_subnets" {}
 
 variable "target_group_arns" {}
+
+variable "region" {
+  
+}

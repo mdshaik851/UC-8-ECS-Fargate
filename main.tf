@@ -54,4 +54,10 @@ module "ecs_creation" {
   ecs_security_group_id = module.vpc_creation.security_group_ecs_farget
   private_subnets = module.vpc_creation.private_subnet_ids
   target_group_arns = module.alb.target_group_arns
+  region = var.region
+}
+
+module "creation_cloud_wtach_alarm" {
+  source = "./modules/cloudwatch"
+  cluster_name = module.ecs_creation.cluster_name
 }

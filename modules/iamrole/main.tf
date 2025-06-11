@@ -1,3 +1,4 @@
+# Task execution role ECS agent permission
 resource "aws_iam_role" "ecs_task_execution_role" {
   name = var.ecs_task_role
 
@@ -50,7 +51,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_role_policy" {
   })
 }
 
-# ECS Task Role
+# ECS Task Role is used for inside the container
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs-task-role"
 

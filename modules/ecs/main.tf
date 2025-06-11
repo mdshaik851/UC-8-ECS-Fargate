@@ -34,6 +34,15 @@ resource "aws_ecs_task_definition" "patient_service" {
           protocol      = "tcp"
         }
       ]
+
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+        awslogs-group = aws_cloudwatch_log_group.patient_log_group.name,
+        awslogs-region = var.region,
+        awslogs-stream-prefix = "ecs"
+      }
+    }
     }
   ])
 
@@ -63,6 +72,17 @@ resource "aws_ecs_task_definition" "appointment_service" {
           protocol      = "tcp"
         }
       ]
+
+      
+    logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+        awslogs-group = aws_cloudwatch_log_group.appointment_log_group.name,
+        awslogs-region = var.region,
+        awslogs-stream-prefix = "ecs"
+      }
+    }
+
 
     }
   ])
@@ -123,5 +143,26 @@ resource "aws_ecs_service" "appointment_service" {
 
   tags = {
     Name        = "appointment-service"
+  }
+}
+
+# creation Log-group for patient service
+
+resource "aws_cloudwatch_log_group" "patient_log_group" {
+ name = "/ecs/patient_log_group"
+ retention_in_days = 7
+ tags = {
+    Name        = "patient_service_log_group"
+
+  }
+}
+
+# creation Log-group for appointtment service
+resource "aws_cloudwatch_log_group" "appointment_log_group" {
+ name = "/ecs/appointment_log_group"
+ retention_in_days = 7
+ tags = {
+    Name        = "appointment_service_log_group"
+
   }
 }
