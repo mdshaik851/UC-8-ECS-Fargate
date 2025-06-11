@@ -106,27 +106,6 @@ jobs:
           chmod +x terraform-docs
           sudo mv terraform-docs /usr/local/bin/
 
-      - name: Generate Terraform Docs and Commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config --local user.email "md939255shaik@gmail.com"
-          git config --local user.name "mdshaik851"
-
-          terraform-docs markdown . > README.md.new
-          mv README.md.new README.md
-
-          if [ -f README.md ]; then
-            git add README.md
-            if git commit -m "docs: Update README.md"; then
-              git push
-              echo "Successfully committed and pushed README.md changes."
-            else
-              echo "No README.md changes to commit."
-            fi
-          else
-            echo "README.md was not generated."
-          fi
-
       - name: Update Pull Request
         uses: actions/github-script@v7
         if: github.event_name == 'pull_request'
