@@ -1,6 +1,9 @@
 name: UC8 using ECS Farget for patient & appointment service
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -17,7 +20,8 @@ on:
 
 permissions:
   id-token: write
-  contents: read
+  contents: write
+  pull-requests: write
   
 jobs:
   lint-checks:
@@ -71,13 +75,22 @@ jobs:
           terraform_wrapper: false
 
       - name: Terraform Init
+        id: init
         run: terraform init
 
-      - name: Terraform Format
+      - name: Format Terraform code
         run: terraform fmt -recursive
+        id: fmt
 
       - name: Terraform Validate
-        run: terraform validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: github.event_name == 'pull_request'
+        run: terraform plan -no-color -input=false
+        continue-on-error: true
 
       - name: Setup Node.js
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -92,27 +105,6 @@ jobs:
           tar -xzf terraform-docs.tar.gz
           chmod +x terraform-docs
           sudo mv terraform-docs /usr/local/bin/
-
-      - name: Generate Terraform Docs and Commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          git config --local user.email "md939255shaik@gmail.com"
-          git config --local user.name "mdshaik851"
-
-          terraform-docs markdown . > README.md.new
-          mv README.md.new README.md
-
-          if [ -f README.md ]; then
-            git add README.md
-            if git commit -m "docs: Update README.md"; then
-              git push
-              echo "Successfully committed and pushed README.md changes."
-            else
-              echo "No README.md changes to commit."
-            fi
-          else
-            echo "README.md was not generated."
-          fi
 
       - name: Update Pull Request
         uses: actions/github-script@v7
@@ -144,8 +136,7 @@ jobs:
               body: output
             })
 
-      - name: Terraform Plan
-        run: terraform plan
+      
 
       - name: Terraform Apply
         if: ${{ github.event.inputs.action == 'apply' }}
