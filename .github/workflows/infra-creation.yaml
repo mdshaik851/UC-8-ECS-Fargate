@@ -76,6 +76,41 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
+      - name: Setup Node.js
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install terraform-docs
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          curl -sSLo ./terraform-docs.tar.gz https://terraform-docs.io/dl/v0.16.0/terraform-docs-v0.16.0-$(uname)-amd64.tar.gz
+          tar -xzf terraform-docs.tar.gz
+          chmod +x terraform-docs
+          sudo mv terraform-docs /usr/local/bin/
+
+      - name: Generate Terraform Docs and Commit
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          git config --local user.email "md939255shaik@gmail.com"
+          git config --local user.name "mdshaik851"
+
+          terraform-docs markdown . > README.md.new
+          mv README.md.new README.md
+
+          if [ -f README.md ]; then
+            git add README.md
+            if git commit -m "docs: Update README.md"; then
+              git push
+              echo "Successfully committed and pushed README.md changes."
+            else
+              echo "No README.md changes to commit."
+            fi
+          else
+            echo "README.md was not generated."
+          fi
+
       - name: Terraform Plan
         run: terraform plan
 
