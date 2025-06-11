@@ -1,0 +1,87 @@
+name: UC8 using ECS Farget for patient & appointment service
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+
+permissions:
+  id-token: write
+  contents: read
+  
+jobs:
+  lint-checks:
+    name: Lint and Security Checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install TFLint
+        run: |
+          wget https://github.com/terraform-linters/tflint/releases/download/v0.50.2/tflint_linux_amd64.zip
+          unzip tflint_linux_amd64.zip
+          sudo mv tflint /usr/local/bin/
+          tflint --version
+
+      - name: Run TFLint
+        run: tflint --init && tflint -f compact
+        working-directory: ./
+
+      - name: Install Checkov
+        run: |
+          pip3 install --upgrade pip
+          pip3 install checkov
+
+      - name: Run Checkov
+        run: checkov -d . --framework terraform --soft-fail
+        working-directory: ./
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    needs: lint-checks
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::994466158061:role/mdshaik851_oidc_connection
+          aws-region: ${{ vars.AWS_REGION }}
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ vars.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Format
+        run: terraform fmt -recursive
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        if: ${{ github.event.inputs.action == 'apply' }}
+        run: terraform apply -auto-approve
+
+      - name: Terraform Destroy
+        if: ${{ github.event.inputs.action == 'destroy' }}
+        run: terraform destroy -auto-approve
